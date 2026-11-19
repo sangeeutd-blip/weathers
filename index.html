@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather Information</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #dbeafe;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .container {
+            background-color: white;
+            width: 350px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0px 2px 10px gray;
+        }
+
+        h1 {
+            color: #2563eb;
+        }
+
+        input {
+            width: 80%;
+            padding: 12px;
+            border: 1px solid gray;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+
+        button {
+            background-color: #2563eb;
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background-color: #1e40af;
+        }
+
+        #result {
+            margin-top: 20px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        #result h2 {
+            color: #2563eb;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Weather Information</h1>
+
+        <input type="text" id="city" placeholder="Enter a city name">
+
+        <br><br>
+
+        <button onclick="get()">Get Weather</button>
+
+        <div id="result"></div>
+
+    </div>
+
+    <script>
+
+        function get() {
+
+            let place = document.getElementById("city").value;
+
+            if (place == "") {
+                document.getElementById("result").innerHTML = "Please enter city name";
+                return;
+            }
+
+            fetch("https://geocoding-api.open-meteo.com/v1/search?name=" + place + "&count=5&language=en&format=json")
+
+            .then(response => response.json())
+
+            .then(data => {
+
+                if (!data.results || data.results.length == 0) {
+                    document.getElementById("result").innerHTML = "City not found";
+                    return;
+                }
+
+                let longitude = data.results[0].longitude;
+                let latitude = data.results[0].latitude;
+
+                weather_details(longitude, latitude);
+
+            })
+
+            .catch(error => {
+                document.getElementById("result").innerHTML = "Something went wrong";
+            });
+
+        }
+
+        function weather_details(lo, la) {
+
+            fetch("https://api.open-meteo.com/v1/forecast?latitude=" + la + "&longitude=" + lo + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code")
+
+            .then(response => response.json())
+
+            .then(data => {
+
+                let weather = data.current;
+
+                document.getElementById("result").innerHTML =
+
+                    "<h2>Weather Details</h2>" +
+                    "<p>🌡 Temperature: " + weather.temperature_2m + " °C</p>" +
+                    "<p>💧 Humidity: " + weather.relative_humidity_2m + " %</p>" +
+                    "<p>🌤 Feels Like: " + weather.apparent_temperature + " °C</p>" +
+                    "<p>Weather Code: " + weather.weather_code + "</p>";
+
+            })
+
+            .catch(error => {
+                document.getElementById("result").innerHTML = "Unable to get weather details";
+            });
+
+        }
+
+    </script>
+
+</body>
+</html>
